@@ -1,0 +1,102 @@
+---
+title: "Priors in logistic regression"
+output: html_notebook
+---
+
+Slightly more formal exploration of concepts from `simple_priors_bern_glm.R` file.
+
+# Data simulation
+
+Small sample size with weak effects. Two covariates have no effect on $y$.
+
+```{r}
+N <- 100
+K <- 1
+
+set.seed(666)
+
+x1 <- rnorm(N, 0, 1)
+x2 <- rnorm(N, 0, 1)
+# Red herring variables
+x3 <- rnorm(N, 0, 1)
+x4 <- rnorm(N, 0, 1)
+
+b0 <- -1
+b1 <- 0.08
+b2 <- -0.05
+
+p <- plogis(b0 + b1 * x1 + b2 * x2)
+y <- rbinom(N, K, prob = p)
+```
+
+# Normal priors
+
+Setting features that are constant across all model runs.
+
+```{r}
+# Data and constants
+my_data <- list(y = y)
+my_constants <- list(N = N,
+                     x1 = x1,
+                     x2 = x2,
+                     x3 = x3,
+                     x4 = x4)
+
+# Parameters to monitor
+parameters.to.save <- c("b0", "b1", "b2", "b3", "b4")
+
+# Sampler settings
+n.iter <- 2000
+n.burnin <- 200
+n.chains <- 3
+
+# Uninformed flat inits
+initial.values <- function(){list(
+  b0 = runif(1, -10, 10),
+  b1 = runif(1, -10, 10),
+  b2 = runif(1, -10, 10),
+  b3 = runif(1, -10, 10),
+  b4 = runif(1, -10, 10)
+)}
+```
+
+
+## N(0,25)
+
+```{r}
+# Uniform -10, 10 priors
+N25_mod <- nimbleCode({
+  
+  # Priors
+  b0 ~ dnorm(0, 25)
+  b1 ~ dnorm(0, 25)
+  b2 ~ dnorm(0, 25)
+  b3 ~ dnorm(0, 25)
+  b4 ~ dnorm(0, 25)
+  
+  # Likelihood
+  for(i in 1:N) {
+    y[i] ~ dbern(prob = p[i])
+    logit(p[i]) <- b0 + b1 * x1[i] + b2 * x2[i] + b3 * x3[i] + b4 * x4[i]
+  }
+})
+
+N25_out <- nimbleMCMC(code = N25_mod, 
+                      constants = my_constants,
+                      data = my_data,              
+                      inits = initial.values,
+                      monitors = parameters.to.save,
+                      niter = n.iter,
+                      nburnin = n.burnin, 
+                      nchains = n.chains)
+
+MCMCsummary(N25_out, digits = 2)
+
+MCMCtrace(N25_out,
+          pdf = FALSE)
+
+MCMCplot(N25_out,
+         ci = c(50, 89),
+         HPD = TRUE)
+```
+
