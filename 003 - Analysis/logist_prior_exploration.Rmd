@@ -1,6 +1,16 @@
 ---
 title: "Priors in logistic regression"
-output: html_notebook
+output: 
+  html_notebook:
+    theme: flatly
+    highlight: monochrome
+    code_folding: hide
+    toc: true
+    toc_depth: 2
+    toc_float:
+      collapsed: false
+      smooth_scroll: false
+    df_round1_print: paged
 ---
 
 Slightly more formal exploration of concepts from `simple_priors_bern_glm.R` file.
@@ -100,3 +110,220 @@ MCMCplot(N25_out,
          HPD = TRUE)
 ```
 
+### Quick summary
+
+- Overestimates intercept and effects of 2 true covariates.
+- "Picks" up effect of red herring covariates.
+
+## N(0,10)
+
+```{r}
+# Uniform -10, 10 priors
+N10_mod <- nimbleCode({
+  
+  # Priors
+  b0 ~ dnorm(0, 10)
+  b1 ~ dnorm(0, 10)
+  b2 ~ dnorm(0, 10)
+  b3 ~ dnorm(0, 10)
+  b4 ~ dnorm(0, 10)
+  
+  # Likelihood
+  for(i in 1:N) {
+    y[i] ~ dbern(prob = p[i])
+    logit(p[i]) <- b0 + b1 * x1[i] + b2 * x2[i] + b3 * x3[i] + b4 * x4[i]
+  }
+})
+
+N10_out <- nimbleMCMC(code = N10_mod, 
+                      constants = my_constants,
+                      data = my_data,              
+                      inits = initial.values,
+                      monitors = parameters.to.save,
+                      niter = n.iter,
+                      nburnin = n.burnin, 
+                      nchains = n.chains)
+
+MCMCsummary(N10_out, digits = 2)
+
+MCMCtrace(N10_out,
+          pdf = FALSE)
+
+MCMCplot(N10_out,
+         ci = c(50, 89),
+         HPD = TRUE)
+```
+
+### Quick summary
+
+- Overestimates intercept and effects of 2 true covariates.
+  + Intercept marginally closer to true value but trivial.
+- "Picks" up effect of red herring covariates.
+
+## N(0,5)
+
+```{r}
+# Uniform -10, 10 priors
+N5_mod <- nimbleCode({
+  
+  # Priors
+  b0 ~ dnorm(0, 5)
+  b1 ~ dnorm(0, 5)
+  b2 ~ dnorm(0, 5)
+  b3 ~ dnorm(0, 5)
+  b4 ~ dnorm(0, 5)
+  
+  # Likelihood
+  for(i in 1:N) {
+    y[i] ~ dbern(prob = p[i])
+    logit(p[i]) <- b0 + b1 * x1[i] + b2 * x2[i] + b3 * x3[i] + b4 * x4[i]
+  }
+})
+
+N5_out <- nimbleMCMC(code = N5_mod, 
+                      constants = my_constants,
+                      data = my_data,              
+                      inits = initial.values,
+                      monitors = parameters.to.save,
+                      niter = n.iter,
+                      nburnin = n.burnin, 
+                      nchains = n.chains)
+
+MCMCsummary(N5_out, digits = 2)
+
+MCMCtrace(N5_out,
+          pdf = FALSE)
+
+MCMCplot(N5_out,
+         ci = c(50, 89),
+         HPD = TRUE)
+```
+
+### Quick summary
+
+- Didn't converge - needs more iterations or better initial values.
+
+## N(0,1)
+
+```{r}
+# Uniform -10, 10 priors
+N1_mod <- nimbleCode({
+  
+  # Priors
+  b0 ~ dnorm(0, 1)
+  b1 ~ dnorm(0, 1)
+  b2 ~ dnorm(0, 1)
+  b3 ~ dnorm(0, 1)
+  b4 ~ dnorm(0, 1)
+  
+  # Likelihood
+  for(i in 1:N) {
+    y[i] ~ dbern(prob = p[i])
+    logit(p[i]) <- b0 + b1 * x1[i] + b2 * x2[i] + b3 * x3[i] + b4 * x4[i]
+  }
+})
+
+N1_out <- nimbleMCMC(code = N1_mod, 
+                      constants = my_constants,
+                      data = my_data,              
+                      inits = initial.values,
+                      monitors = parameters.to.save,
+                      niter = n.iter,
+                      nburnin = n.burnin, 
+                      nchains = n.chains)
+
+MCMCsummary(N1_out, digits = 2)
+
+MCMCtrace(N1_out,
+          pdf = FALSE)
+
+MCMCplot(N1_out,
+         ci = c(50, 89),
+         HPD = TRUE)
+```
+
+### Quick summary
+
+- Not much change.
+
+## N(0,0.5)
+
+```{r}
+# Uniform -10, 10 priors
+N0.5_mod <- nimbleCode({
+  
+  # Priors
+  b0 ~ dnorm(0, 0.5)
+  b1 ~ dnorm(0, 0.5)
+  b2 ~ dnorm(0, 0.5)
+  b3 ~ dnorm(0, 0.5)
+  b4 ~ dnorm(0, 0.5)
+  
+  # Likelihood
+  for(i in 1:N) {
+    y[i] ~ dbern(prob = p[i])
+    logit(p[i]) <- b0 + b1 * x1[i] + b2 * x2[i] + b3 * x3[i] + b4 * x4[i]
+  }
+})
+
+N0.5_out <- nimbleMCMC(code = N0.5_mod, 
+                      constants = my_constants,
+                      data = my_data,              
+                      inits = initial.values,
+                      monitors = parameters.to.save,
+                      niter = n.iter,
+                      nburnin = n.burnin, 
+                      nchains = n.chains)
+
+MCMCsummary(N0.5_out, digits = 2)
+
+MCMCtrace(N0.5_out,
+          pdf = FALSE)
+
+MCMCplot(N0.5_out,
+         ci = c(50, 89),
+         HPD = TRUE)
+```
+
+### Quick summary
+
+- Same.
+
+## N(0,0.1)
+
+```{r}
+# Uniform -10, 10 priors
+N0.1_mod <- nimbleCode({
+  
+  # Priors
+  b0 ~ dnorm(0, 0.1)
+  b1 ~ dnorm(0, 0.1)
+  b2 ~ dnorm(0, 0.1)
+  b3 ~ dnorm(0, 0.1)
+  b4 ~ dnorm(0, 0.1)
+  
+  # Likelihood
+  for(i in 1:N) {
+    y[i] ~ dbern(prob = p[i])
+    logit(p[i]) <- b0 + b1 * x1[i] + b2 * x2[i] + b3 * x3[i] + b4 * x4[i]
+  }
+})
+
+N0.1_out <- nimbleMCMC(code = N0.1_mod, 
+                      constants = my_constants,
+                      data = my_data,              
+                      inits = initial.values,
+                      monitors = parameters.to.save,
+                      niter = n.iter,
+                      nburnin = n.burnin, 
+                      nchains = n.chains)
+
+MCMCsummary(N0.1_out, digits = 2)
+
+MCMCtrace(N0.1_out,
+          pdf = FALSE)
+
+MCMCplot(N0.1_out,
+         ci = c(50, 89),
+         HPD = TRUE)
+```
